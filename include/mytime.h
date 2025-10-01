@@ -7,4 +7,5 @@ class MyTime {
 public:
     static void init();
     static String getTimeString();
+    static String getDateString();
 };
