@@ -5,6 +5,7 @@ class PowerManager {
     public:
         void initButton();
         bool checkButtonPress();
+        void initPower();
     private:
         static void IRAM_ATTR axpISR();
         static volatile bool axpPressed;

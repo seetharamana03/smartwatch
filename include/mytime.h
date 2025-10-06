@@ -5,7 +5,10 @@
 
 class MyTime {
 public:
-    static void init();
-    static String getTimeString();
-    static String getDateString();
+    MyTime();
+    void init();
+    String getTimeString();
+    String getDateString();
+private:
+    struct tm timeinfo;
 };

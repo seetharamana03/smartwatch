@@ -39,3 +39,25 @@ bool PowerManager::checkButtonPress()
     }
     return false;
 }
+
+void PowerManager::initPower()
+{
+    Wire.begin(21, 22);  // SDA=21, SCL=22 (standard for TTGO T-Watch)
+
+    if (power.begin(Wire, AXP202_SLAVE_ADDRESS) == AXP_FAIL) {
+        Serial.println("AXP202 init failed");
+        while (1);
+    }
+
+    // Turn on required power rails
+    power.setPowerOutPut(AXP202_LDO2, AXP202_ON);  // LCD power
+    power.setPowerOutPut(AXP202_LDO3, AXP202_ON);  // Display backlight
+    power.setPowerOutPut(AXP202_DCDC2, AXP202_ON); // Core voltage
+    power.setPowerOutPut(AXP202_EXTEN, AXP202_ON); // External 3.3V (if needed)
+
+    delay(50);
+
+    // Optionally enable interrupts for the power button
+    power.enableIRQ(AXP202_PEK_SHORTPRESS_IRQ, true);
+    power.clearIRQ();
+}
