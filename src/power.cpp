@@ -1,34 +1,63 @@
 #include "power.h"
 #include <Wire.h>
+#include <AXP20X.h>
 
-volatile bool PowerManager::axpInt = false;
+// static volatile bool axpPressed = false;
+// AXP20X_Class power;
 
-void IRAM_ATTR PowerManager::axpISR() {
-    axpInt = true;
+volatile bool PowerManager::axpPressed = false;
+
+void IRAM_ATTR PowerManager::axpISR()
+{
+    axpPressed = true;
 }
 
-void PowerManager::initButton() {
+void PowerManager::initButton()
+{
     Wire.begin(21, 22);
-    if (power.begin(Wire, AXP202_SLAVE_ADDRESS) ==  AXP_FAIL){
+    if (power.begin(Wire, AXP202_SLAVE_ADDRESS) == AXP_FAIL)
+    {
         Serial.println("AXP202 init failed");
-        while(1);
+        while (1);
     }
+
     power.enableIRQ(AXP202_PEK_SHORTPRESS_IRQ, true);
     power.clearIRQ();
 
     pinMode(35, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(35), axpISR, FALLING);
+    attachInterrupt((digitalPinToInterrupt(35)), axpISR, FALLING);
 }
 
-bool PowerManager::checkButtonPress(){
-    if (axpInt) {
-        axpInt = false;
+bool PowerManager::checkButtonPress()
+{
+    if (axpPressed)
+    {
+        axpPressed = false;
         power.readIRQ();
-        if(power.isPEKShortPressIRQ()) {
-            power.clearIRQ();
-            return true;
-        }
         power.clearIRQ();
+        return true;
     }
     return false;
+}
+
+void PowerManager::initPower()
+{
+    Wire.begin(21, 22);  // SDA=21, SCL=22 (standard for TTGO T-Watch)
+
+    if (power.begin(Wire, AXP202_SLAVE_ADDRESS) == AXP_FAIL) {
+        Serial.println("AXP202 init failed");
+        while (1);
+    }
+
+    // Turn on required power rails
+    power.setPowerOutPut(AXP202_LDO2, AXP202_ON);  // LCD power
+    power.setPowerOutPut(AXP202_LDO3, AXP202_ON);  // Display backlight
+    power.setPowerOutPut(AXP202_DCDC2, AXP202_ON); // Core voltage
+    power.setPowerOutPut(AXP202_EXTEN, AXP202_ON); // External 3.3V (if needed)
+
+    delay(50);
+
+    // Optionally enable interrupts for the power button
+    power.enableIRQ(AXP202_PEK_SHORTPRESS_IRQ, true);
+    power.clearIRQ();
 }
