@@ -43,15 +43,19 @@ void Display::handleHomeScreen(struct tm *timeinfo, uint16_t *x, uint16_t *y)
         Serial.println("Wifi Button Pressed");
         currentScreen = SCREEN_WIFI;
     }
-    if (*x < 155 && *x > 85 && *y < 220 && *y > 150)
+    else if (*x < 155 && *x > 85 && *y < 220 && *y > 150)
     {
         Serial.println("Timer Button Pressed");
     }
-    if (*x < 220 && *x > 155 && *y < 220 && *y > 150)
+    else if (*x < 220 && *x > 155 && *y < 220 && *y > 150)
     {
         Serial.println("Accelerometer Button Pressed");
         currentScreen = SCREEN_ACCELEROMETER;
     }
+    // else
+    // {
+    //     currentScreen = SCREEN_HOME;
+    // }
 }
 
 void Display::handleWifiScreen(const char *ssid, bool isConnected, uint16_t *x, uint16_t *y)
@@ -69,7 +73,6 @@ void Display::handleWifiScreen(const char *ssid, bool isConnected, uint16_t *x, 
         writeText("WiFi Not Connected", 10, 30, 2);
     }
     drawHomeSymbol(150, 180, TFT_WHITE, TFT_BLACK);
-    // drawWiFiSymbol(70, 195, TFT_WHITE);
     drawRefreshIcon(70, 187, TFT_WHITE);
 
     if (*x < 220 && *x > 150 && *y < 220 && *y > 150)
