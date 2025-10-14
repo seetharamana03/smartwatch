@@ -15,6 +15,11 @@ static void IRAM_ATTR ft6236u_isr(void *arg)
     touch_flag = true;
 }
 
+void ft623u_clear_flag()
+{
+    touch_flag = false;
+}
+
 void ft6236u_init(void)
 {
     i2c_config_t conf = {
@@ -29,7 +34,6 @@ void ft6236u_init(void)
     i2c_param_config(I2C_TOUCH_PORT, &conf);
     // i2c_driver_install(I2C_NUM_0, conf.mode, 0, 0, 0);
     i2c_driver_install(I2C_TOUCH_PORT, conf.mode, 0, 0, 0);
-
 
     // Reset the FT6236U
     gpio_set_direction(14, GPIO_MODE_OUTPUT);
@@ -76,7 +80,8 @@ esp_err_t ft6236u_read_bytes(uint8_t start_reg, uint8_t *data, size_t len)
     }
 
     ret = i2c_master_read_from_device(I2C_TOUCH_PORT, FT6236U_ADDR, data, len, pdMS_TO_TICKS(1000));
-    if (ret != ESP_OK) {
+    if (ret != ESP_OK)
+    {
         printf("I2C read error %s\n", esp_err_to_name(ret));
     }
 
@@ -112,6 +117,6 @@ void checkTouch(uint16_t *x, uint16_t *y)
     {
         touch_flag = false;
         ft6236u_get_coordinates(x, y);
-        printf("Touch at (%d, %d)\n", *x, *y);
+        // printf("Touch at (%d, %d)\n", *x, *y);
     }
 }
