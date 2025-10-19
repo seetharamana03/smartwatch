@@ -23,7 +23,12 @@ void Display::writeText(String text, int x, int y, int size, uint16_t color, uin
     tft.println(text);
 }
 
-void Display::handleHomeScreen(struct tm *timeinfo, uint16_t *x, uint16_t *y)
+void Display::fillScreen()
+{
+    tft.fillScreen(TFT_BLACK);
+}
+
+void Display::handleHomeScreen(struct tm *timeinfo, int *battery, uint16_t *x, uint16_t *y)
 {
     char currentTime[9];  // HH:MM:SS
     char currentDate[11]; // YYYY-MM-DD
@@ -37,6 +42,7 @@ void Display::handleHomeScreen(struct tm *timeinfo, uint16_t *x, uint16_t *y)
     // drawHeartIcon(100, 180, TFT_WHITE);
     drawClockIcon(120, 170, TFT_WHITE);
     drawFitnessIcon(190, 170, TFT_WHITE);
+    drawBatteryIcon(120, 95, *battery, TFT_WHITE);
 
     if (*x < 85 && *x > 20 && *y < 220 && *y > 150)
     {
@@ -46,6 +52,7 @@ void Display::handleHomeScreen(struct tm *timeinfo, uint16_t *x, uint16_t *y)
     else if (*x < 155 && *x > 85 && *y < 220 && *y > 150)
     {
         Serial.println("Timer Button Pressed");
+        currentScreen = SCREEN_TIMER;
     }
     else if (*x < 220 && *x > 155 && *y < 220 && *y > 150)
     {
@@ -94,6 +101,207 @@ void Display::handleAccelerometerScreen(uint32_t *steps, uint16_t *x, uint16_t *
         Serial.println("Home Button Pressed");
         currentScreen = SCREEN_HOME;
     }
+}
+
+// void Display::handleStopwatchScreen(uint16_t *x, uint16_t *y, bool *stopWatchRunning, unsigned long *startMillis, unsigned long *elapsedMillis)
+// {
+
+//     // Start/Stop Button
+//     if (*x > 25 && *x < 115 && *y > 180 && *y < 220)
+//     {
+//         *stopWatchRunning = !(*stopWatchRunning);
+//         if (*stopWatchRunning)
+//         {
+//             *startMillis = millis() - *elapsedMillis; // resume from paused
+//             tft.fillRoundRect(25, 180, 90, 40, 6, TFT_ORANGE);
+//             tft.drawString("STOP", 45, 190, 2);
+//         }
+//         else
+//         {
+//             tft.fillRoundRect(25, 180, 90, 40, 6, TFT_GREEN);
+//             tft.drawString("START", 40, 190, 2);
+//         }
+//     }
+
+//     // Reset Button
+//     if (*x > 135 && *x < 225 && *y > 180 && *y < 220)
+//     {
+//         *stopWatchRunning = false;
+//         *elapsedMillis = 0;
+//         updateStopwatchTime(0);
+
+//         tft.fillRoundRect(25, 180, 90, 40, 6, TFT_GREEN);
+//         tft.drawString("START", 40, 190, 2);
+//     }
+
+//     tft.fillScreen(TFT_BLACK);
+
+//     // Title
+//     tft.setTextColor(TFT_CYAN, TFT_BLACK);
+//     tft.drawString("STOPWATCH", 50, 20, 4);
+
+//     // Time
+//     tft.setTextColor(TFT_WHITE, TFT_BLACK);
+//     tft.drawString("00:00.0", 60, 80, 6);
+
+//     // Buttons
+//     tft.fillRoundRect(25, 180, 90, 40, 6, TFT_GREEN);
+//     tft.drawString("START", 40, 190, 2);
+
+//     tft.fillRoundRect(135, 180, 90, 40, 6, TFT_RED);
+//     tft.drawString("RESET", 155, 190, 2);
+// }
+
+// void Display::handleStopwatchScreen(uint16_t *x, uint16_t *y, bool *stopWatchRunning, unsigned long *startTime, unsigned long *elapsedTime)
+// {
+//     tft.fillScreen(TFT_BLACK);
+//     tft.setTextColor(TFT_WHITE);
+
+//     writeText("Start", 15, 110, 2, TFT_WHITE, TFT_BLACK);
+//     tft.drawRect(10, 104, 70, 30, TFT_WHITE);
+
+//     writeText("Stop", 95, 110, 2, TFT_WHITE, TFT_BLACK);
+//     tft.drawRect(92, 104, 55, 30, TFT_WHITE);
+
+//     writeText("Reset", 165, 110, 2, TFT_WHITE, TFT_BLACK);
+//     tft.drawRect(160, 104, 70, 30, TFT_WHITE);
+
+//     drawHomeSymbol(150, 180, TFT_WHITE, TFT_BLACK);
+
+//     if (*x < 220 && *x > 150 && *y < 220 && *y > 150)
+//     {
+//         Serial.println("Home Button Pressed");
+//         currentScreen = SCREEN_HOME;
+//     }
+
+//     //Start Button
+//     if (*x < 80 && *x > 10 && *y < 134 && *y > 104)
+//     {
+//         if (!(*stopWatchRunning))
+//         {
+//             *stopWatchRunning = true;
+//             *startTime = millis() - *elapsedTime;
+//             Serial.println("Stopwatch Started");
+//         }
+//     }
+//     //Stop Button
+//     if (*x < 147 && *x > 92 && *y < 134 && *y > 104)
+//     {
+//         if (*stopWatchRunning)
+//         {
+//             *stopWatchRunning = false;
+//             *elapsedTime = millis() - *startTime;
+//             Serial.println("Stopwatch Stopped");
+//         }
+//     }
+//     //Reset Button
+//     if (*x < 230 && *x > 160 && *y < 134 && *y > 104)
+//     {
+//         *stopWatchRunning = false;
+//         *elapsedTime = 0;
+//         *startTime = millis();
+//         Serial.println("Stopwatch Reset");
+//         updateStopwatchTime(0);
+//     }
+
+//     if (*stopWatchRunning)
+//     {
+//         *elapsedTime = millis() - *startTime;
+//         updateStopwatchTime(*elapsedTime);
+//     }
+//     else
+//     {
+//         updateStopwatchTime(*elapsedTime);
+//     }
+// }
+
+void Display::handleStopwatchScreen(uint16_t *x, uint16_t *y,
+                                    bool *stopWatchRunning,
+                                    unsigned long *startTime,
+                                    unsigned long *elapsedTime)
+{
+    static bool initialized = false;
+
+    // Draw layout only once when entering stopwatch screen
+    if (!initialized)
+    {
+        tft.fillScreen(TFT_BLACK);
+        tft.setTextColor(TFT_WHITE);
+
+        // --- Buttons ---
+        writeText("Start", 15, 110, 2, TFT_WHITE, TFT_BLACK);
+        tft.drawRect(10, 104, 70, 30, TFT_WHITE);
+
+        writeText("Stop", 95, 110, 2, TFT_WHITE, TFT_BLACK);
+        tft.drawRect(92, 104, 55, 30, TFT_WHITE);
+
+        writeText("Reset", 165, 110, 2, TFT_WHITE, TFT_BLACK);
+        tft.drawRect(160, 104, 70, 30, TFT_WHITE);
+
+        // --- Home icon ---
+        drawHomeSymbol(150, 180, TFT_WHITE, TFT_BLACK);
+
+        // Initial display
+        updateStopwatchTime(*elapsedTime);
+        initialized = true;
+    }
+
+    // --- Home Button ---
+    if (*x < 220 && *x > 150 && *y < 220 && *y > 150)
+    {
+        Serial.println("Home Button Pressed");
+        currentScreen = SCREEN_HOME;
+        initialized = false; // force redraw next time we return
+        return;
+    }
+
+    // --- Start Button ---
+    if (*x < 80 && *x > 10 && *y < 134 && *y > 104)
+    {
+        if (!(*stopWatchRunning))
+        {
+            *stopWatchRunning = true;
+            *startTime = millis() - *elapsedTime; // resume if paused
+            Serial.println("Stopwatch Started");
+        }
+    }
+
+    // --- Stop Button ---
+    if (*x < 147 && *x > 92 && *y < 134 && *y > 104)
+    {
+        if (*stopWatchRunning)
+        {
+            *stopWatchRunning = false;
+            *elapsedTime = millis() - *startTime;
+            Serial.println("Stopwatch Stopped");
+        }
+    }
+
+    // --- Reset Button ---
+    if (*x < 230 && *x > 160 && *y < 134 && *y > 104)
+    {
+        *stopWatchRunning = false;
+        *elapsedTime = 0;
+        *startTime = millis();
+        Serial.println("Stopwatch Reset");
+        updateStopwatchTime(0);
+    }
+}
+
+void Display::updateStopwatchTime(unsigned long elapsedMillis)
+{
+    unsigned long totalSeconds = elapsedMillis / 1000;
+    int hours = totalSeconds / 3600;
+    int minutes = (totalSeconds % 3600) / 60;
+    int seconds = totalSeconds % 60;
+
+    char buffer[12];
+    sprintf(buffer, "%02d:%02d:%02d", hours, minutes, seconds);
+    // tft.fillRect(50, 80, 180, 40, TFT_BLACK);
+
+    // tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    // tft.drawString(buffer, 50, 80, 6);
+    writeText(String(buffer), 22, 30, 4);
 }
 
 void Display::drawWiFiSymbol(int x, int y, uint16_t color)
@@ -227,3 +435,51 @@ void Display::drawFitnessIcon(int x, int y, uint16_t color)
     // Back to baseline
     tft.drawLine(cx + w / 8, cy - h / 3, cx + w / 2, cy, color);
 }
+
+void Display::drawBatteryIcon(int x, int y, int battery, uint16_t color)
+{
+    int box_w = 50;     // main battery width
+    int box_h = 24;     // battery height
+    int corner_r = 4;   // rounded corner radius
+    int terminal_w = 4; // width of battery terminal (tip)
+
+    // --- Draw main rounded rectangle (battery body) ---
+    tft.drawRoundRect(x - box_w / 2, y - box_h / 2, box_w, box_h, corner_r, color);
+
+    // --- Draw small terminal on right side ---
+    int term_x = x + box_w / 2; // start just outside the body
+    int term_y = y - box_h / 4; // vertically centered on right
+    tft.drawRect(term_x, term_y, terminal_w, box_h / 2, color);
+
+    // --- Optional inner fill indicator (placeholder for % fill) ---
+    // Example: a mid-level charge (50%)
+    int fill_margin = 4;
+    // int fill_width = (box_w - 2 * fill_margin) * ((float)battery / 100); // 50% fill level
+    if (battery > 100)
+    {
+        battery = 100;
+    }
+    int fill_width = (box_w - 2 * fill_margin) * ((float)battery / 100); // 50% fill level
+    int fill_height = box_h - 2 * fill_margin;
+    int fill_x = x - box_w / 2 + fill_margin;
+    int fill_y = y - fill_height / 2;
+    tft.fillRect(fill_x, fill_y, fill_width, fill_height, TFT_GREEN);
+    String percent = String(battery) + "%";
+
+    // writeText(percent, x - 22, y - 7, 2, TFT_WHITE, TFT_BLACK);
+}
+
+// void Display::updateStopwatchTime(unsigned long elapsedMillis)
+// {
+//     int minutes = (elapsedMillis / 60000);
+//     int seconds = (elapsedMillis / 1000) % 60;
+//     int tenths = (elapsedMillis % 1000) / 100;
+
+//     char buffer[16];
+//     sprintf(buffer, "%02d:%02d.%d", minutes, seconds, tenths);
+
+//     // Clear previous time region
+//     tft.fillRect(60, 80, 160, 40, TFT_BLACK);
+//     tft.setTextColor(TFT_WHITE, TFT_BLACK);
+//     tft.drawString(buffer, 60, 80, 6);
+// }

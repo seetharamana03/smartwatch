@@ -6,6 +6,7 @@ class Power
     public: 
         void initPower();
         void togglePower();
+        int getBatteryPercentage();
     private:
         AXP20X_Class axp;
         static void IRAM_ATTR axpISR();
