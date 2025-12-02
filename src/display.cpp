@@ -256,7 +256,7 @@ void Display::handleStopwatchScreen(uint16_t *x, uint16_t *y,
     }
 
     // --- Start Button ---
-    if (*x < 80 && *x > 10 && *y < 134 && *y > 104)
+    if (*x < 80 && *x > 10 && *y < 150 && *y > 90)
     {
         if (!(*stopWatchRunning))
         {
@@ -267,7 +267,7 @@ void Display::handleStopwatchScreen(uint16_t *x, uint16_t *y,
     }
 
     // --- Stop Button ---
-    if (*x < 147 && *x > 92 && *y < 134 && *y > 104)
+    if (*x < 147 && *x > 92 && *y < 150 && *y > 90)
     {
         if (*stopWatchRunning)
         {
@@ -278,7 +278,7 @@ void Display::handleStopwatchScreen(uint16_t *x, uint16_t *y,
     }
 
     // --- Reset Button ---
-    if (*x < 230 && *x > 160 && *y < 134 && *y > 104)
+    if (*x < 230 && *x > 160 && *y < 150 && *y > 90)
     {
         *stopWatchRunning = false;
         *elapsedTime = 0;

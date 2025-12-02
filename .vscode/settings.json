@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "time.h": "c",
+        "esp_err.h": "c",
+        "stdint.h": "c",
+        "cmath": "cpp"
+    }
+}

@@ -9,7 +9,7 @@
 
 Display display;
 Power power;
-MyWifi wifi("HotspotAnand", "chamali1");
+MyWifi wifi("MyHotspot", "chamali1");
 const char *ssid = "HotspotAnand";
 struct tm ntpTime;
 
@@ -21,6 +21,9 @@ bool stopWatchRunning = false;
 unsigned long startMillis = 0;
 unsigned long elapsedMillis = 0;
 SemaphoreHandle_t displayMutex;
+
+unsigned long lastTouchTime = 0;
+const unsigned long touchCooldown = 300; //milliseconds
 
 // Task handles (optional)
 TaskHandle_t displayTaskHandle;
@@ -100,7 +103,16 @@ void taskDisplay(void *pvParams)
       lastSteps = steps;
     }
 
-    if (touchX != 0 || touchY != 0)
+    unsigned long nowMs = millis();
+    bool validTouch = false;
+
+    if ((touchX != 0 || touchY != 0) && (nowMs - lastTouchTime > touchCooldown))
+    {
+      validTouch = true;
+      lastTouchTime = nowMs;
+    }
+
+    if(validTouch)
     {
       needRedraw = true;
     }
@@ -124,7 +136,7 @@ void taskDisplay(void *pvParams)
           display.handleWifiScreen(ssid, wifi.isConnected(), &touchX, &touchY);
           xSemaphoreGive(displayMutex);
         }
-        if (touchX < 90 && touchX > 20 && touchY < 220 && touchY > 150)
+        if (validTouch && touchX < 90 && touchX > 20 && touchY < 220 && touchY > 150)
         {
           if (xSemaphoreTake(displayMutex, portMAX_DELAY))
           {
