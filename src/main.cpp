@@ -1,3 +1,5 @@
+//Final Driver with Extension
+
 #include <Arduino.h>
 #include "display.h"
 #include "power.h"
@@ -9,8 +11,8 @@
 
 Display display;
 Power power;
-MyWifi wifi("MyHotspot", "chamali1");
-const char *ssid = "HotspotAnand";
+MyWifi wifi("MyHotspot", "12345678");
+const char *ssid = "MyHotspot";
 struct tm ntpTime;
 
 ScreenState currentScreen = SCREEN_HOME;
@@ -219,7 +221,6 @@ void taskStopWatch(void *pvParams)
     vTaskDelay(pdMS_TO_TICKS(200));
   }
 }
-
 // void taskStopWatch(void *pvParams)
 // {
 //   unsigned long lastUpdate = 0;
