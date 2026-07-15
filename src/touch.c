@@ -115,6 +115,8 @@ void checkTouch(uint16_t *x, uint16_t *y)
 {
     if (touch_flag)
     {
+        printf("interrupt pulled high");
+
         touch_flag = false;
         ft6236u_get_coordinates(x, y);
         // printf("Touch at (%d, %d)\n", *x, *y);

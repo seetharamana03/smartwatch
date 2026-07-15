@@ -221,3 +221,231 @@ void taskStopWatch(void *pvParams)
     vTaskDelay(pdMS_TO_TICKS(200));
   }
 }
+
+// Final Driver with Extension — Superloop version (no FreeRTOS)
+
+// #include <Arduino.h>
+// #include "display.h"
+// #include "power.h"
+// #include "mywifi.h"
+// #include "motor.h"
+// #include "mytime.h"
+// #include "touch.h"
+// #include "accel.h"
+// #include "ble.h"
+// #include <BLEDevice.h>
+
+// Display display;
+// Power power;
+// MyWifi wifi("MyHotspot", "12345678");
+// const char *ssid = "MyHotspot";
+// struct tm ntpTime;
+// BLEManager ble;
+// BLECharacteristic *stepCount;
+// BLECharacteristic *wifiConnected;
+
+// ScreenState currentScreen = SCREEN_HOME;
+// uint32_t steps = 0;
+// uint16_t touchX = 0, touchY = 0;
+// uint32_t isWifiConnected = 0;
+
+// bool stopWatchRunning = false;
+// unsigned long startMillis = 0;
+// unsigned long elapsedMillis = 0;
+
+// unsigned long lastTouchTime = 0;
+// const unsigned long touchCooldown = 300; // milliseconds
+
+// // --- Cooperative scheduling intervals (replace the old FreeRTOS task periods) ---
+// const unsigned long displayInterval = 100;   // was taskDisplay   (100 ms)
+// const unsigned long stopwatchInterval = 200; // was taskStopWatch (200 ms)
+// const unsigned long sensorInterval = 1000;   // was taskSensors   (1000 ms)
+
+// unsigned long lastDisplayUpdate = 0;
+// unsigned long lastStopwatchUpdate = 0;
+// unsigned long lastSensorUpdate = 0;
+
+// // --- Update routines (former task bodies, run once per tick) ---
+// void updateDisplay();
+// void updateStopwatch();
+// void updateSensors();
+
+// void setup()
+// {
+//   Serial.begin(115200);
+//   Wire.begin(21, 22);
+
+//   power.initPower();
+//   ft6236u_init();
+//   display.initialize();
+//   accel_init();
+//   mytime_init();
+//   wifi.connect();
+//   if (wifi.isConnected())
+//   {
+//     isWifiConnected = 1;
+//     syncTimeWithNTP();
+//     getLocalTime(&ntpTime);
+//     pcf8563_set_time(&ntpTime);
+//   }
+//   else
+//   {
+//     isWifiConnected = 0;
+//   }
+
+//   // ble.begin("ESP32");
+
+//   // wifiConnected = ble.addCharacteristic(
+//   //     "beb5483e-36e1-4688-b7f5-ea07361b26a8",
+//   //     BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+
+//   // stepCount = ble.addCharacteristic(
+//   //     "0972ef8c-7613-4075-ad52-756f33d4da91", // any fresh UUID
+//   //     BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+
+//   // ble.start();
+// }
+
+// void loop()
+// {
+//   // unsigned long now = millis();
+
+//   // // if (ble.isConnected())
+//   // // {
+//   // //   // Serial.println("BLE is connected");
+//   // //   ble.setValue(value);
+//   // //   value++;
+//   // //   Serial.println(value);
+//   // //   delay(1000);
+//   // // }
+//   // // ble.loop();
+//   // // ble.setValue(stepCount, steps);
+//   // // ble.setValue(wifiConnected, isWifiConnected);
+
+//   // if (now - lastSensorUpdate >= sensorInterval)
+//   // {
+//   //   lastSensorUpdate = now;
+//   //   updateSensors();
+//   // }
+
+//   // if (now - lastStopwatchUpdate >= stopwatchInterval)
+//   // {
+//   //   lastStopwatchUpdate = now;
+//   //   updateStopwatch();
+//   // }
+
+//   // if (now - lastDisplayUpdate >= displayInterval)
+//   // {
+//   //   lastDisplayUpdate = now;
+//   //   updateDisplay();
+//   // }
+
+//   checkTouch(&touchX, &touchY);
+//   Serial.print("X Coordinate: ");
+//   Serial.println(touchX);
+//   Serial.print("Y Coordinate: ");
+//   Serial.println(touchY);
+// }
+
+// // --- Update Implementations ---
+
+// void updateDisplay()
+// {
+//   struct tm rtcTime;
+//   static ScreenState lastScreen = SCREEN_HOME;
+//   static uint32_t lastSteps = 0;
+//   static int lastMinute = 0;
+//   static bool needRedraw = true;
+
+//   pcf8563_get_time(&rtcTime);
+//   power.togglePower();
+//   checkTouch(&touchX, &touchY);
+//   int battery = power.getBatteryPercentage();
+//   int minuteNow = rtcTime.tm_min;
+
+//   if (lastMinute != minuteNow)
+//   {
+//     needRedraw = true;
+//     lastMinute = rtcTime.tm_min;
+//   }
+//   if (steps != lastSteps)
+//   {
+//     needRedraw = true;
+//     lastSteps = steps;
+//   }
+
+//   unsigned long nowMs = millis();
+//   bool validTouch = false;
+
+//   if ((touchX != 0 || touchY != 0) && (nowMs - lastTouchTime > touchCooldown))
+//   {
+//     validTouch = true;
+//     lastTouchTime = nowMs;
+//   }
+
+//   if (validTouch)
+//   {
+//     needRedraw = true;
+//   }
+
+//   if (needRedraw || currentScreen != lastScreen)
+//   {
+//     needRedraw = false;
+//     lastScreen = currentScreen;
+//     switch (currentScreen)
+//     {
+//     case SCREEN_HOME:
+//       display.handleHomeScreen(&rtcTime, &battery, &touchX, &touchY);
+//       break;
+//     case SCREEN_WIFI:
+//       display.handleWifiScreen(ssid, wifi.isConnected(), &touchX, &touchY);
+//       if (validTouch && touchX < 90 && touchX > 20 && touchY < 220 && touchY > 150)
+//       {
+//         display.fillScreen();
+//         display.drawHomeSymbol(150, 180, TFT_WHITE, TFT_BLACK);
+//         display.drawRefreshIcon(70, 187, TFT_WHITE);
+//         Serial.println("Connect Button Pressed");
+//         display.writeText("Wifi Connecting...", 10, 30, 2, TFT_WHITE, TFT_BLACK);
+//         wifi.connect();
+//         if (wifi.isConnected())
+//         {
+//           isWifiConnected = 1;
+//           syncTimeWithNTP();
+//           getLocalTime(&ntpTime);
+//           pcf8563_set_time(&ntpTime);
+//         }
+//         else
+//         {
+//           isWifiConnected = 0;
+//         }
+//         needRedraw = true;
+//       }
+//       break;
+//     case SCREEN_ACCELEROMETER:
+//       display.handleAccelerometerScreen(&steps, &touchX, &touchY);
+//       break;
+//     case SCREEN_TIMER:
+//       display.handleStopwatchScreen(&touchX, &touchY, &stopWatchRunning, &startMillis, &elapsedMillis);
+//       break;
+//     }
+//   }
+//   touchX = 0;
+//   touchY = 0;
+// }
+
+// void updateStopwatch()
+// {
+//   if (currentScreen == SCREEN_TIMER)
+//   {
+//     if (stopWatchRunning)
+//     {
+//       elapsedMillis = millis() - startMillis;
+//     }
+//     display.updateStopwatchTime(elapsedMillis);
+//   }
+// }
+
+// void updateSensors()
+// {
+//   steps = accel_get_steps();
+// }
